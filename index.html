@@ -1,7 +1,251 @@
 <!DOCTYPE html>
-<html>
-<head><title>Haris Rizvi</title></head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Haris Rizvi</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box; margin: 0; padding: 0;
+      font-size: inherit; font-weight: normal;
+      user-select: none; outline: none;
+      border-radius: 0; background: none; border: none;
+    }
+    html, body { height: 100%; font-family: 'Montserrat', sans-serif; background: #181818; color: white; scroll-behavior: smooth; }
+    a { text-decoration: none; color: inherit; }
+
+    /* HERO */
+    #hero { position: relative; width: 100%; height: 100vh; overflow: hidden; display: flex; justify-content: center; }
+    canvas { position: absolute; top: 0; left: 0; }
+    .mouse {
+      position: absolute; top: 0; left: 0; width: 100%; text-align: center;
+      padding: 1rem 0; z-index: 2; color: rgba(255,255,255,0.3);
+      letter-spacing: 6px; font-size: 0.45em; line-height: 2.5;
+      text-transform: uppercase; transition: all 0.5s ease;
+      opacity: 0; transform: translateY(-15px);
+    }
+    .mouse.active { transform: none; opacity: 1; }
+    .plate {
+      position: absolute; bottom: 0; z-index: 2; width: 100%;
+      padding: 1.25rem 0 2rem; text-align: center;
+      letter-spacing: 4px; font-size: 0.6em; line-height: 2.5;
+    }
+    .text-animation { opacity: 0; }
+    .text-animation.active { opacity: 1; }
+    .text-animation .letter { opacity: 0; transition: color 0.5s ease, opacity 0.3s ease; color: white; }
+    .text-animation .letter.active { color: rgba(255,255,255,0.3); opacity: 1; animation: colorCycle 5s ease infinite 3s; }
+    @keyframes colorCycle {
+      0%   { color: rgba(255,255,255,1); }
+      20%  { color: rgba(255,255,255,0.3); }
+      100% { color: rgba(255,255,255,0.3); }
+    }
+    .social { padding-top: 1rem; opacity: 0; visibility: hidden; transition: all 0.5s ease; }
+    .social.active { opacity: 1; visibility: visible; }
+    .social a {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      margin: 0 0.75rem; color: rgba(255,255,255,0.35);
+      letter-spacing: 3px; font-size: 1em; font-weight: 600;
+      text-transform: uppercase; opacity: 0; transform: translateY(8px);
+      transition: all 0.5s ease;
+    }
+    .social.active a { opacity: 1; transform: none; }
+    .social a:hover { color: white; }
+    .social a svg { width: 14px; height: 14px; fill: currentColor; }
+    .scroll-cue {
+      position: absolute; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+      z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+      color: rgba(255,255,255,0.2); letter-spacing: 4px; font-size: 0.4em;
+      text-transform: uppercase; opacity: 0; transition: opacity 1s ease 2s;
+    }
+    .scroll-cue.active { opacity: 1; }
+    .scroll-cue::after {
+      content: ''; display: block; width: 1px; height: 40px;
+      background: rgba(255,255,255,0.15); animation: scrollLine 1.5s ease infinite;
+    }
+    @keyframes scrollLine {
+      0%   { transform: scaleY(0); transform-origin: top; }
+      50%  { transform: scaleY(1); transform-origin: top; }
+      51%  { transform: scaleY(1); transform-origin: bottom; }
+      100% { transform: scaleY(0); transform-origin: bottom; }
+    }
+
+    /* SECTIONS */
+    .content-section { padding: 6rem 2rem; max-width: 1000px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.55rem; letter-spacing: 6px; text-transform: uppercase;
+      color: rgba(255,255,255,0.25); margin-bottom: 3rem;
+      display: flex; align-items: center; gap: 1.5rem;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.08); }
+
+    /* PROJECTS */
+    .projects-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.06);
+    }
+    .project-card {
+      padding: 2.5rem 2rem; background: #181818;
+      transition: background 0.3s ease; position: relative; overflow: hidden;
+    }
+    .project-card::before {
+      content: ''; position: absolute; top: 0; left: 0;
+      width: 2px; height: 0; background: white; transition: height 0.4s ease;
+    }
+    .project-card:hover { background: #1e1e1e; }
+    .project-card:hover::before { height: 100%; }
+    .project-tag { font-size: 0.5rem; letter-spacing: 5px; text-transform: uppercase; color: rgba(255,255,255,0.2); margin-bottom: 1.25rem; }
+    .project-name { font-size: 1.1rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: white; margin-bottom: 0.75rem; }
+    .project-desc { font-size: 0.7rem; line-height: 1.9; color: rgba(255,255,255,0.35); letter-spacing: 1px; margin-bottom: 1.5rem; }
+    .project-link {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.5rem; letter-spacing: 4px; text-transform: uppercase;
+      color: rgba(255,255,255,0.4); transition: color 0.2s ease;
+    }
+    .project-link:hover { color: white; }
+    .project-link svg { width: 10px; height: 10px; fill: currentColor; }
+
+    /* CONTACT */
+    #contact { border-top: 1px solid rgba(255,255,255,0.06); }
+    .contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2rem; }
+    .contact-item { display: flex; flex-direction: column; gap: 0.5rem; }
+    .contact-item-label { font-size: 0.45rem; letter-spacing: 5px; text-transform: uppercase; color: rgba(255,255,255,0.2); }
+    .contact-item-value { font-size: 0.75rem; letter-spacing: 2px; color: rgba(255,255,255,0.6); transition: color 0.2s ease; word-break: break-all; }
+    .contact-item-value:hover { color: white; }
+
+    footer { text-align: center; padding: 2rem; font-size: 0.45rem; letter-spacing: 4px; text-transform: uppercase; color: rgba(255,255,255,0.1); border-top: 1px solid rgba(255,255,255,0.04); }
+  </style>
+</head>
 <body>
-<h1>Coming Soon</h1>
+
+  <section id="hero">
+    <canvas id="plane-canvas"></canvas>
+    <canvas id="main-canvas"></canvas>
+    <div class="mouse" id="mouse">Hold mouse button to interact</div>
+    <div class="plate">
+      <h2 class="text-animation" data-js="text">IT Specialist &amp; Web Developer</h2>
+      <p class="text-animation" data-js="text">Karachi, Pakistan</p>
+      <div class="social" id="social">
+        <a href="https://github.com/Harisrizvi" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+        <a href="mailto:haris28.hr@gmail.com">
+          <svg viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
+          Email
+        </a>
+        <a href="https://wa.me/923032230550" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          WhatsApp
+        </a>
+      </div>
+    </div>
+    <div class="scroll-cue" id="scroll-cue">Scroll</div>
+  </section>
+
+  <section id="projects" class="content-section">
+    <div class="section-label">Selected Work</div>
+    <div class="projects-grid">
+      <div class="project-card">
+        <div class="project-tag">Web Development</div>
+        <div class="project-name">Sanki King</div>
+        <div class="project-desc">Full digital presence for a client brand, covering design, build, and deployment.</div>
+        <a class="project-link" href="https://sankiking.com/" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16"><path d="M8.636 3.5a.5.5 0 00-.5-.5H1.5A1.5 1.5 0 000 4.5v10A1.5 1.5 0 001.5 16h10a1.5 1.5 0 001.5-1.5V7.864a.5.5 0 00-1 0V14.5a.5.5 0 01-.5.5h-10a.5.5 0 01-.5-.5v-10a.5.5 0 01.5-.5H8.136a.5.5 0 00.5-.5z"/><path d="M16 .5a.5.5 0 00-.5-.5h-5a.5.5 0 000 1h3.793L6.146 9.146a.5.5 0 101.708 1.708L15 2.707V6.5a.5.5 0 001 0V.5z"/></svg>
+          Visit Site
+        </a>
+      </div>
+      <div class="project-card">
+        <div class="project-tag">Salon Booking</div>
+        <div class="project-name">Muse by Anahita</div>
+        <div class="project-desc">Cinematic dark-themed booking website with video hero, 3D gallery, drag carousel, and Calendly integration.</div>
+        <a class="project-link" href="https://harisrizvi.github.io/musebyanahita/" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16"><path d="M8.636 3.5a.5.5 0 00-.5-.5H1.5A1.5 1.5 0 000 4.5v10A1.5 1.5 0 001.5 16h10a1.5 1.5 0 001.5-1.5V7.864a.5.5 0 00-1 0V14.5a.5.5 0 01-.5.5h-10a.5.5 0 01-.5-.5v-10a.5.5 0 01.5-.5H8.136a.5.5 0 00.5-.5z"/><path d="M16 .5a.5.5 0 00-.5-.5h-5a.5.5 0 000 1h3.793L6.146 9.146a.5.5 0 101.708 1.708L15 2.707V6.5a.5.5 0 001 0V.5z"/></svg>
+          Visit Site
+        </a>
+      </div>
+      <div class="project-card">
+        <div class="project-tag">React / Firebase / AI</div>
+        <div class="project-name">Chat with Quran</div>
+        <div class="project-desc">AI-powered Quran chat application built with React, Vite, Firebase, and the Gemini API.</div>
+        <span class="project-link" style="cursor:default;opacity:0.3;">In Development</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="content-section">
+    <div class="section-label">Get in Touch</div>
+    <div class="contact-grid">
+      <div class="contact-item">
+        <span class="contact-item-label">Email</span>
+        <a class="contact-item-value" href="mailto:haris28.hr@gmail.com">haris28.hr@gmail.com</a>
+      </div>
+      <div class="contact-item">
+        <span class="contact-item-label">WhatsApp</span>
+        <a class="contact-item-value" href="https://wa.me/923032230550" target="_blank" rel="noopener">+92 303 223 0550</a>
+      </div>
+      <div class="contact-item">
+        <span class="contact-item-label">GitHub</span>
+        <a class="contact-item-value" href="https://github.com/Harisrizvi" target="_blank" rel="noopener">github.com/Harisrizvi</a>
+      </div>
+      <div class="contact-item">
+        <span class="contact-item-label">Based in</span>
+        <span class="contact-item-value">Karachi, Pakistan</span>
+      </div>
+    </div>
+  </section>
+
+  <footer>Haris Rizvi &nbsp;&middot;&nbsp; harisrizvi.com</footer>
+
+<script>
+const tools={drawPath(ctx,fn){ctx.save();ctx.beginPath();fn();ctx.closePath();ctx.restore()},random(min,max,int){let r=min+Math.random()*((max+(int?1:0))-min);return int?parseInt(r):r},getVectorLength(p1,p2){return Math.sqrt(Math.pow(p1[0]-p2[0],2)+Math.pow(p1[1]-p2[1],2))},easing(t,b,c,d){return c*((t=t/d-1)*t*t+1)+b},cellEasing(t,b,c,d){return c*(t/=d)*t*t*t+b}}
+const doc={height:0,width:0},plane={xCell:0,yCell:0,cells:[]},context={plane:null,main:null}
+const mouse={x:0,y:0,coords:{x:0,y:0},down:{state:false,x:0,y:0}}
+const cfg={cell:35,sectionWidth:8,sectionHeight:1,numberOffset:5,shadowBlur:true,bgColor:'#181818'}
+const ui={plane:'#plane-canvas',main:'#main-canvas',textNodes:'[data-js=text]',social:'#social',mouse:'#mouse',scrollCue:'#scroll-cue'}
+
+class App{
+  constructor(){
+    this.state={area:0,time:Date.now(),lt:0,planeProgress:0,dotsProgress:0,fadeInProgress:0,textProgress:0,stepOffset:0,textOffset:0,markupOffset:0,glitches:[],animLines:[],animNumbers:[],tabIsActive:true,planeIsDrawn:false,mousePower:0,textPixelData:[],text:{},delta:0,dlt:performance.now(),needRedraw:true}
+    this.bindNodes();this.getDimensions();mouse.x=doc.width/2;mouse.y=doc.height/2;this.start()
+  }
+  start(){this.initEvents();this.canvasInit();this.loop();this.initCheckingInterval();this.splitText()}
+  splitText(){ui.textNodes.forEach(el=>{const v=el.innerText;el.innerHTML=v.split('').reduce((a,c)=>a+`<span class="letter">${c}</span>`,'')})}
+  animateText(){
+    const cb=()=>{ui.social.classList.add('active');ui.mouse.classList.add('active');const sc=document.getElementById('scroll-cue');if(sc)sc.classList.add('active')}
+    ui.textNodes.forEach((el,ei)=>{el.classList.add('active');const letters=el.querySelectorAll('.letter');const len=Math.round(letters.length/2)+1;for(let i=0;i<len;i++){const[l1,l2]=[letters[i],letters[letters.length-i]];setTimeout(()=>{if(l1)l1.classList.add('active');if(l2)l2.classList.add('active');if(i===len-1&&ei===ui.textNodes.length-1)cb()},i*100)}})
+  }
+  getDimensions(){doc.height=document.getElementById('hero').clientHeight;doc.width=document.documentElement.clientWidth}
+  updatePlane(){const{width:w,height:h}=doc;const cell=Math.round(w/cfg.cell);const xPreSize=w/cell;plane.xCell=(w/xPreSize)%2!==0?w/((w/xPreSize)+1):xPreSize;const yPreSize=h/Math.round(cell*(h/w));plane.yCell=(h/yPreSize)%2!==0?h/((h/yPreSize)+1):yPreSize;plane.cells=[Math.round(w/plane.xCell),Math.round(h/plane.yCell)];plane.xCenter=Math.round((plane.cells[1])/2);plane.yCenter=Math.round((plane.cells[0])/2);plane.centerCoords=[plane.yCenter*plane.xCell,plane.xCenter*plane.yCell]}
+  bindNodes(){for(const s in ui){const els=document.querySelectorAll(ui[s]);ui[s]=els.length===1?els[0]:els}}
+  canvasInit(){const font='10px Montserrat',llc='round',color='rgba(255,255,255,0.1)';context.plane=ui.plane.getContext('2d');context.plane.lineCap=context.plane.lineJoin=llc;context.plane.font=font;context.plane.fillStyle=context.plane.strokeStyle=color;context.main=ui.main.getContext('2d');context.main.lineCap=context.main.lineJoin=llc;context.main.font=font;context.main.fillStyle=context.main.strokeStyle=color;this.getTextPixels()}
+  initEvents(){window.addEventListener('resize',()=>{this.getDimensions();this.resizeHandler()});document.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;mouse.coords={x:((mouse.x/doc.width)-0.5)/0.5,y:(((mouse.y/doc.height)-0.5)/0.5)*-1}});document.addEventListener('mousedown',e=>{mouse.down={state:true,x:e.clientX,y:e.clientY}});document.addEventListener('mouseup',()=>{mouse.down.state=false});document.addEventListener('contextmenu',e=>e.preventDefault());this.resizeHandler()}
+  resizeHandler(){const s=this.state;s.area=(doc.width*doc.height)/1000000;ui.main.height=ui.plane.height=doc.height;ui.main.width=ui.plane.width=doc.width;this.updatePlane();this.updateTextConfig();if(s.planeIsDrawn)this.getTextPixels();s.needRedraw=true}
+  updateTextConfig(){this.state.text={baseLine:'top',font:'800 140px Montserrat',value:'HARIS'}}
+  initCheckingInterval(){const s=this.state;setInterval(()=>{s.tabIsActive=s.time<=s.lt?false:true;s.lt=s.time;s.needRedraw=!s.tabIsActive},100)}
+  loop(){const loop=()=>{const ctx=context.main,s=this.state;s.time=Date.now();ctx.clearRect(0,0,doc.width,doc.height);this.updateState();this.draw();if(s.needRedraw)s.needRedraw=false;this.raf=requestAnimationFrame(loop)};loop()}
+  updateState(){const s=this.state,now=performance.now();s.delta=now-s.dlt;s.dlt=now;const dt=s.delta;if(mouse.down.state){s.mousePower+=0.001*dt;if(s.mousePower>=1){s.mousePower=1;ui.mouse.classList.remove('active')}}else{s.mousePower-=0.001*dt;if(s.mousePower<=0)s.mousePower=0}if(s.planeProgress>=0.2){s.dotsProgress+=0.00035*dt;if(s.dotsProgress>=1)s.dotsProgress=1}s.planeProgress+=0.00035*dt;if(s.planeProgress>=1)s.planeProgress=1;if(s.planeIsDrawn){s.fadeInProgress+=0.00015*dt;if(s.fadeInProgress>=1)s.fadeInProgress=1;const mp=tools.cellEasing(s.mousePower,0,1,1);s.stepOffset+=(0.002*dt)+(mp*(0.0035*dt));s.textOffset+=(0.00005*dt)+(mp*(0.002*dt));s.markupOffset+=(0.00015*dt)+(mp*(0.00035*dt));s.textProgress+=0.0005*dt;if(s.textProgress>=1)s.textProgress=1}}
+  getTextPixels(){const ctx=context.main,s=this.state,{xCell,yCell}=plane;tools.drawPath(ctx,()=>{ctx.fillStyle='white';ctx.textBaseline=s.text.baseLine;ctx.font=s.text.font;const text=s.text.value,w=ctx.measureText(text).width;ctx.fillText(text,(doc.width/2)-(w/2),yCell*1.75)});const imgData=ctx.getImageData(0,0,doc.width,doc.height).data;s.textPixelData=[];const offset=10;for(let h=0;h<doc.height;h+=offset)for(let w=0;w<doc.width;w+=offset){const px=imgData[((w+(h*doc.width))*4)-1];if(px===255)s.textPixelData.push({x:w,y:h,value:tools.random(0,1,true)})}ctx.clearRect(0,0,doc.width,doc.height)}
+  drawText(){const{yCell}=plane,ctx=context.main,s=this.state,p=s.textOffset,mp=tools.cellEasing(s.mousePower,0,1,1),len=s.textPixelData.length;tools.drawPath(ctx,()=>{if(cfg.shadowBlur){ctx.shadowColor='rgba(255,255,255,0.025)';ctx.shadowBlur=30*s.mousePower}ctx.globalAlpha=s.fadeInProgress*0.95;ctx.textBaseline=s.text.baseLine;ctx.fillStyle=cfg.bgColor;ctx.font=s.text.font;const text=s.text.value,x=(doc.width/2)-(ctx.measureText(text).width/2);ctx.fillText(text,x,yCell*1.75)});for(let i=0;i<s.textPixelData.length;i++){const{x,y,value}=s.textPixelData[i];const x2=((3+(mp*50))*Math.sin(p*i)),y2=((10+(mp*50))*Math.cos(p*i));const per=(1-mp)*(i/len);tools.drawPath(ctx,()=>{if(!per)return;ctx.globalAlpha=s.fadeInProgress;ctx.font='8px Montserrat';ctx.fillStyle=`rgba(255,255,255,${per*0.3})`;if(i%2===0)ctx.fillText(value+'',x,y+(y2*-1));ctx.fillStyle=`rgba(255,255,255,${per})`;ctx.fillRect(x+x2,y,5*per*(1-mp),1);ctx.fillRect(x,y+y2,1,5*per*(1-mp))})}}
+  draw(){const ctx=context.main,s=this.state,{xCell,yCell,xCenter,yCenter,cells}=plane,cp=s.planeProgress;if(s.planeProgress>=1&&!s.planeIsDrawn){s.planeIsDrawn=true;this.startGeneratingGlitches();this.startGeneratingLines();this.startGeneratingNumbers();this.getTextPixels();this.animateText()}if(!s.planeIsDrawn||s.dotsProgress<1||s.planeIsDrawn&&s.needRedraw)this.drawPlane();for(let i=0;i<cells[0];i++)for(let i2=0;i2<cells[1];i2++){const x=i*xCell,y=i2*yCell;if(s.planeIsDrawn){this.drawMouseMoveInteraction({i,i2,x,y});if(i2===xCenter&&i!==yCenter)this.drawMarkupYAnimation({i,i2,x,y,cp});if(i2!==xCenter&&i===yCenter)this.drawMarkupXAnimation({i,i2,x,y,cp})}}if(s.planeIsDrawn){this.drawGlitches();this.drawAnimLines();this.drawNumbersAnimation();this.drawText()}}
+  startGeneratingNumbers(){const s=this.state;const gen=()=>{const{cells,xCell,yCell}=plane,mp=s.mousePower,t=tools.random((1+50*(1-mp)),(5+100*(1-mp)))/s.area;const item={p:0,color:`rgba(255,255,255,${tools.random(0.01,0.3)})`,blinks:Array(tools.random(0,3,true)).fill(null).map(()=>({at:tools.random(0,1),dur:tools.random(0,0.3)})),pf:tools.random(0.00075,0.01),x:tools.random(0,cells[0],true)*xCell,y:tools.random(0,cells[1],true)*yCell,value:tools.random(0,1,true)};if(s.tabIsActive)s.animNumbers.push(item);setTimeout(gen,t)};gen()}
+  drawNumbersAnimation(){const ctx=context.main,s=this.state,{yCell,xCell}=plane;s.animNumbers.forEach((item,i)=>{item.p+=item.pf*s.delta;let show=true;item.blinks.forEach(b=>{if(item.p>=b.at&&item.p<=b.at+b.dur)show=false});if(!show)return;tools.drawPath(ctx,()=>{if(cfg.shadowBlur){ctx.shadowColor='white';ctx.shadowBlur=10}ctx.globalAlpha=s.fadeInProgress;ctx.textBaseline='top';ctx.font='18px Montserrat';const th=18,tw=ctx.measureText(item.value+'').width;ctx.fillStyle=item.color;ctx.fillText(item.value+'',item.x+(xCell/2)-tw/2,item.y+(yCell/2)-th/2)});if(item.p>=1)s.animNumbers.splice(i,1)})}
+  startGeneratingLines(){const s=this.state;const gen=()=>{const{cells,xCell,yCell}=plane,mp=s.mousePower,t=tools.random(25+80*(1-mp),75+1200*(1-mp))/s.area;const item={p:0,color:tools.random(0,0.15),pf:tools.random(0.0005,0.00125),x:tools.random(0,cells[0],true)*xCell,y:tools.random(0,cells[1],true)*yCell};item.coord=tools.random(0,1,true)?'x':'y';item.length=tools.random(xCell*2,(s.area*xCell)*5);item.dir=tools.random(0,1,true)?1:-1;item.distance=item.length*tools.random(1,2);if(s.tabIsActive)s.animLines.push(item);setTimeout(gen,t)};gen()}
+  drawAnimLines(){const ctx=context.main,s=this.state;s.animLines.forEach((line,i)=>{line.p+=line.pf*s.delta;const p=tools.easing(line.p,0,1,1),p1=p/0.5,p2=1-((p-0.5)/0.5),color=`rgba(255,255,255,${0.1+line.color*(p<=0.5?p1:p2)})`,length=p<=0.5?line.length*p1:line.length*p2,bw=line.dir===-1,isX=line.coord==='x',isY=line.coord==='y',x=!isX?0:bw?-(length-line.distance*p):-line.distance*p,y=!isY?0:bw?-(length-line.distance*p):-line.distance*p;tools.drawPath(ctx,()=>{ctx.globalAlpha=s.fadeInProgress;ctx.fillStyle=color;ctx.fillRect(line.x+x+(isX&&p<=0.5?(line.length-length)*line.dir:0),line.y+y+(isY&&p<=0.5?(line.length-length)*line.dir:0),isX?length:1,isY?length:1)});if(line.p>=1)s.animLines.splice(i,1)})}
+  startGeneratingGlitches(){const s=this.state;const gen=()=>{const{cells,xCell,yCell}=plane,mp=s.mousePower,t=tools.random((5+100*(1-mp))/s.area,(25+1200*(1-mp))/s.area);const item={p:0,color:`rgba(255,255,255,${tools.random(0.01,1)})`,blinks:Array(tools.random(0,3,true)).fill(null).map(()=>({at:tools.random(0,1),dur:tools.random(0,0.3)})),pf:tools.random(0.0015,0.0035),x:tools.random(0,cells[0],true)*xCell,y:tools.random(0,cells[1],true)*yCell,width:xCell,height:yCell};if(s.tabIsActive)s.glitches.push(item);setTimeout(gen,t)};gen()}
+  drawGlitches(){const ctx=context.main,s=this.state;s.glitches.forEach((g,i)=>{g.p+=g.pf*s.delta;let show=true;g.blinks.forEach(b=>{if(g.p>=b.at&&g.p<=b.at+b.dur)show=false});if(!show)return;tools.drawPath(ctx,()=>{if(cfg.shadowBlur){ctx.shadowColor='white';ctx.shadowBlur=30}ctx.globalAlpha=s.fadeInProgress;ctx.fillStyle=g.color;ctx.fillRect(g.x,g.y,g.width,g.height)});if(g.p>=1)s.glitches.splice(i,1)})}
+  drawMouseMoveInteraction(props){const ctx=context.main,s=this.state,fp=s.fadeInProgress,sp=s.stepOffset,mp=s.mousePower,{xCenter,yCenter}=plane,{i,i2,x,y}=props;const position=[Math.abs(i2-xCenter),Math.abs(i-yCenter)];const mouseRange=(200+50*mp)*((i*i2)%2)*(Math.sin((position[0]-position[1])));if(mouseRange<=100)return;const vector=tools.getVectorLength([x,y],[mouse.x,mouse.y]);if(vector<=mouseRange){const percent=(1-(vector/mouseRange))*fp,spinRadius=50*(1-percent),xOffset=((Math.sin(sp+(i))*spinRadius)*((Math.PI*2)/4))*(((i+i2)%4)==0?-1:1),yOffset=((Math.cos(sp+(i2))*spinRadius)*((Math.PI*2)/4)),sx=x+xOffset,sy=y+yOffset,radius=25*(1-percent),lineWidth=3+10*percent,vector2=tools.getVectorLength([sx,sy],[mouse.x,mouse.y]),p2=(1-(vector2/(mouseRange+spinRadius*2))),color=`rgba(255,255,255,${0.3*percent})`,color2=`rgba(255,255,255,${0.7*p2*percent})`;tools.drawPath(ctx,()=>{ctx.strokeStyle=color2;ctx.moveTo(sx,sy);ctx.lineTo(mouse.x,mouse.y);ctx.stroke()});tools.drawPath(ctx,()=>{ctx.strokeStyle=color2;ctx.moveTo(x,y);ctx.lineTo(sx,sy);ctx.stroke()});tools.drawPath(ctx,()=>{ctx.fillStyle=color;ctx.arc(x,y,1,0,2*Math.PI);ctx.fill()});tools.drawPath(ctx,()=>{ctx.strokeStyle=`rgba(255,255,255,${0.5*percent})`;ctx.lineWidth=1+(2*(1-percent));ctx.arc(x,y,3+10*(1-percent),0,2*Math.PI);ctx.stroke()});tools.drawPath(ctx,()=>{ctx.fillStyle=`rgba(255,255,255,${percent})`;ctx.arc(sx,sy,1,0,2*Math.PI);ctx.fill()});tools.drawPath(ctx,()=>{if(cfg.shadowBlur){ctx.shadowColor='white';ctx.shadowBlur=radius}ctx.lineWidth=lineWidth;ctx.strokeStyle=`rgba(255,255,255,${0.75*percent})`;ctx.arc(sx,sy,radius,0,2*Math.PI);ctx.stroke()})}}
+  drawPlaneDotsAnimation(props){const ctx=context.plane,{dp,i,i2,x,y}=props,{xCenter,yCenter}=plane;const position=[Math.abs(i2-xCenter),Math.abs(i-yCenter)],index=position[0]*position[1],maxIndex=xCenter*yCenter,percent=1/maxIndex,point=percent*index;let f=dp*(dp/point);if(f>=1)f=1;const mf=f>=0.5?(1-f)/0.5:f/0.5;if(!mf)return;tools.drawPath(ctx,()=>{ctx.fillStyle=`rgba(255,255,255,${mf*0.15})`;ctx.fillRect(x-1,y-1,3,3)})}
+  drawPlaneCenterLines(props){const{p}=props,ctx=context.plane,{centerCoords}=plane;tools.drawPath(ctx,()=>{ctx.fillStyle=`rgba(255,255,255,${0.2+((1-p)*1)})`;ctx.fillRect(centerCoords[0],0+((doc.height/2)*(1-p)),1,doc.height*p);ctx.fillRect(0+((doc.width/2)*(1-p)),centerCoords[1],doc.width*p,1)})}
+  drawYLines(props){const{i,cp,p,x}=props,ctx=context.plane,{yCenter}=plane;const percent=1/yCenter,pos=Math.abs(i-yCenter),point=percent*pos;let f=cp*(cp/point);if(f>=1)f=1;const ef=tools.cellEasing(f,0,1,1);if(i)tools.drawPath(ctx,()=>{ctx.fillStyle=`rgba(255,255,255,${0.05+((1-p)*0.35)})`;ctx.fillRect(x,0+((doc.height/2)*(1-ef)),1,doc.height*ef)})}
+  drawYMarkup(props){const ctx=context.plane,{i,p,cp,x,y}=props,{yCenter}=plane;const percent=1/yCenter,pos=Math.abs(i-yCenter),point=percent*pos;const conds=[p>=point,p<=point+percent];let f=cp*(cp/point);if(f>=1)f=1;const f2=conds[0]&&conds[1]?(p-point)/percent:conds[0]?1:0;const text=(i-yCenter)+'';ctx.fillStyle=`rgba(255,255,255,${0.1+((1-f)*0.75)})`;const textCoords=[x-(ctx.measureText(text).width/2),y+(cfg.sectionWidth/2)+cfg.numberOffset];tools.drawPath(ctx,()=>{const o=((1-f2)*50);ctx.globalAlpha=f2;ctx.fillRect(x,y-cfg.sectionWidth/2+o,cfg.sectionHeight,cfg.sectionWidth)});tools.drawPath(ctx,()=>{ctx.globalAlpha=f2;ctx.textBaseline='top';ctx.fillText(text,textCoords[0],textCoords[1]+((1-f2)*(-20)))})}
+  drawXLines(props){const ctx=context.plane,{i2,cp,p,y}=props,{xCenter}=plane;const percent=1/xCenter,pos=Math.abs(i2-xCenter),point=percent*pos;let f=cp*(cp/point);if(f>=1)f=1;const ef=tools.cellEasing(f,0,1,1);if(i2)tools.drawPath(ctx,()=>{ctx.fillStyle=`rgba(255,255,255,${0.05+((1-p)*0.35)})`;ctx.fillRect(0+((doc.width/2)*(1-ef)),y,doc.width*ef,1)})}
+  drawXMarkup(props){const ctx=context.plane,{i2,p,cp,x,y}=props,{xCenter}=plane;const percent=1/xCenter,pos=Math.abs(i2-xCenter),point=percent*pos;const conds=[p>=point,p<=point+percent];let f=cp*(cp/point);if(f>=1)f=1;let f2=conds[0]&&conds[1]?(p-point)/percent:conds[0]?1:0;ctx.fillStyle=`rgba(255,255,255,${0.1+((1-f)*0.75)})`;tools.drawPath(ctx,()=>{const o=((1-f2)*50);ctx.globalAlpha=f2;ctx.fillRect(x-cfg.sectionWidth/2+o,y,cfg.sectionWidth,cfg.sectionHeight)});tools.drawPath(ctx,()=>{ctx.globalAlpha=f2;ctx.textBaseline='middle';const tc=[x+(cfg.sectionWidth/2)+cfg.numberOffset,y+cfg.sectionHeight/2];ctx.fillText((xCenter-i2)+'',tc[0]+((1-f2)*(-20)),tc[1])})}
+  drawPlane(){const s=this.state,ctx=context.plane;ctx.clearRect(0,0,doc.width,doc.height);const{xCell,yCell,xCenter,yCenter,cells}=plane;const p=tools.easing(s.planeProgress,0,1,1),cp=s.planeProgress,dp=s.dotsProgress;this.drawPlaneCenterLines({p});for(let i=0;i<cells[0];i++)for(let i2=0;i2<cells[1];i2++){const x=i*xCell,y=i2*yCell;if(i!==yCenter&&i2!==xCenter)this.drawPlaneDotsAnimation({dp,i,i2,x,y});if(i2===xCenter&&i!==yCenter){this.drawYLines({i,i2,p,cp,x,y});this.drawYMarkup({i,p,cp,x,y})}if(i2!==xCenter&&i===yCenter){this.drawXLines({i,i2,p,cp,x,y});this.drawXMarkup({i2,p,cp,x,y})}}}
+  drawMarkupYAnimation(props){const ctx=context.main,{yCenter}=plane,{i,x,y}=props,s=this.state;const spSin=Math.sin(s.markupOffset),sp=spSin>=0?tools.cellEasing(Math.abs(spSin),0,1,1):0;const percent=1/yCenter,pos=Math.abs(i-yCenter),point=percent*pos;const f=sp>=point&&sp<=point+percent?(sp-point)/percent:0;if(!f)return;const text=(i-yCenter)+'';ctx.fillStyle=`rgba(255,255,255,${0.1+((1-f)*0.75)})`;const textCoords=[x-(ctx.measureText(text).width/2),y+(cfg.sectionWidth/2)+cfg.numberOffset];tools.drawPath(ctx,()=>{ctx.fillStyle=`rgba(255,255,255,${f*0.5})`;ctx.fillRect(x,y-cfg.sectionWidth/2,cfg.sectionHeight,cfg.sectionWidth)});tools.drawPath(ctx,()=>{if(cfg.shadowBlur){ctx.shadowBlur=5;ctx.shadowColor='white'}ctx.fillStyle=`rgba(255,255,255,${f*0.35})`;ctx.textBaseline='top';ctx.fillText(text,textCoords[0],textCoords[1])})}
+  drawMarkupXAnimation(props){const ctx=context.main,s=this.state,{i2,x,y}=props;const spSin=Math.sin(s.markupOffset),sp=spSin<=0?tools.cellEasing(Math.abs(spSin),0,1,1):0;const{xCenter}=plane,percent=1/xCenter,pos=Math.abs(i2-xCenter),point=percent*pos;const f=sp>=point&&sp<=point+percent?(sp-point)/percent:0;if(!f)return;tools.drawPath(ctx,()=>{ctx.fillStyle=`rgba(255,255,255,${f*0.5})`;ctx.fillRect(x-cfg.sectionWidth/2,y,cfg.sectionWidth,cfg.sectionHeight)});tools.drawPath(ctx,()=>{if(cfg.shadowBlur){ctx.shadowBlur=5;ctx.shadowColor='white'}ctx.fillStyle=`rgba(255,255,255,${f*0.3})`;ctx.textBaseline='middle';const tc=[x+(cfg.sectionWidth/2)+cfg.numberOffset,y+cfg.sectionHeight/2];ctx.fillText((xCenter-i2)+'',tc[0],tc[1])})}
+}
+window.addEventListener('load',()=>{window.app=new App()})
+</script>
 </body>
 </html>
