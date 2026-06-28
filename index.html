@@ -837,6 +837,17 @@
   </style>
 </head>
 <body>
+<script>
+// Set hint text immediately before page renders — no flash of wrong text
+(function() {
+  document.addEventListener('DOMContentLoaded', function() {
+    var hint = document.getElementById('mouse-hint');
+    if (!hint) return;
+    var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    hint.textContent = isTouch ? 'Touch & Hold to Interact' : 'Hold to Interact';
+  });
+})();
+</script>
 
 <!-- ── HERO ── -->
 <section id="hero">
@@ -855,7 +866,7 @@
     </nav>
   </div>
 
-  <div class="mouse-hint" id="mouse-hint" aria-hidden="true">Hold to Interact</div>
+  <div class="mouse-hint" id="mouse-hint" aria-hidden="true"></div>
 
   <div class="scroll-indicator" id="scroll-indicator"
        onclick="document.getElementById('projects').scrollIntoView({behavior:'smooth'})"
@@ -1360,6 +1371,11 @@ class App {
     const social = document.getElementById('social');
     const hint = document.getElementById('mouse-hint');
     const scroll = document.getElementById('scroll-indicator');
+    // Ensure correct text on touch devices (backup in case DOMContentLoaded missed it)
+    if (hint && !hint.textContent.trim()) {
+      const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+      hint.textContent = isTouch ? 'Touch & Hold to Interact' : 'Hold to Interact';
+    }
     if (title) title.classList.add('active');
     setTimeout(() => { if (loc) loc.classList.add('active'); }, 150);
     setTimeout(() => { if (social) social.classList.add('active'); }, 350);
@@ -1408,13 +1424,55 @@ class App {
     });
     document.addEventListener('mousedown', e => { mouse.down = { state:true, x:e.clientX, y:e.clientY }; });
     document.addEventListener('mouseup', () => { mouse.down.state = false; });
+    // Touch support — maps touch to mouse for canvas interaction
+    document.addEventListener('touchstart', e => {
+      const t = e.touches[0];
+      mouse.x = t.clientX; mouse.y = t.clientY;
+      mouse.coords = { x:((t.clientX/doc.width)-0.5)/0.5, y:(((t.clientY/doc.height)-0.5)/0.5)*-1 };
+      mouse.down = { state:true, x:t.clientX, y:t.clientY };
+    }, { passive:true });
+    document.addEventListener('touchmove', e => {
+      const t = e.touches[0];
+      mouse.x = t.clientX; mouse.y = t.clientY;
+      mouse.coords = { x:((t.clientX/doc.width)-0.5)/0.5, y:(((t.clientY/doc.height)-0.5)/0.5)*-1 };
+    }, { passive:true });
+    document.addEventListener('touchend', () => { mouse.down.state = false; }, { passive:true });
+
+    // Auto-drift for mobile: animate mouse position on touch devices
+    // so the canvas stays alive without needing interaction
+    if (('ontouchstart' in window) || navigator.maxTouchPoints > 0) {
+      let driftT = 0;
+      let userTouching = false;
+      document.addEventListener('touchstart', () => { userTouching = true; }, { passive: true });
+      document.addEventListener('touchend', () => {
+        setTimeout(() => { userTouching = false; }, 2000);
+      }, { passive: true });
+
+      const driftLoop = () => {
+        if (!userTouching) {
+          driftT += 0.008;
+          // Figure-8 Lissajous path across the screen
+          const cx = doc.width  * 0.5;
+          const cy = doc.height * 0.4;
+          const rx = doc.width  * 0.3;
+          const ry = doc.height * 0.22;
+          mouse.x = cx + rx * Math.sin(driftT);
+          mouse.y = cy + ry * Math.sin(driftT * 2);
+          mouse.coords = {
+            x: ((mouse.x / doc.width)  - 0.5) / 0.5,
+            y: (((mouse.y / doc.height) - 0.5) / 0.5) * -1
+          };
+        }
+        requestAnimationFrame(driftLoop);
+      };
+      driftLoop();
+    }
     document.addEventListener('contextmenu', e => e.preventDefault());
     // Device-adaptive hint + hide on any interaction
     (function() {
       const hint = document.getElementById('mouse-hint');
       if (!hint) return;
-      const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-      hint.textContent = isTouch ? 'Touch & Hold to Interact' : 'Hold to Interact';
+      // Text already set by DOMContentLoaded script — just handle hiding
       const hide = () => hint.classList.add('hidden');
       document.addEventListener('mousedown', hide, { once: true });
       document.addEventListener('touchstart', hide, { once: true, passive: true });
@@ -1462,8 +1520,16 @@ class App {
     const s = this.state, now = performance.now();
     s.delta = now - s.dlt; s.dlt = now;
     const dt = s.delta;
-    if (mouse.down.state) { s.mousePower += 0.001*dt; if (s.mousePower >= 1) s.mousePower = 1; }
-    else { s.mousePower -= 0.001*dt; if (s.mousePower <= 0) s.mousePower = 0; }
+    const isTouchDevice = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+    if (mouse.down.state) {
+      s.mousePower += 0.001*dt;
+      if (s.mousePower >= 1) s.mousePower = 1;
+    } else {
+      s.mousePower -= 0.001*dt;
+      // On touch devices keep ambient power so drift animation shows circles
+      const minPower = isTouchDevice ? 0.25 : 0;
+      if (s.mousePower <= minPower) s.mousePower = minPower;
+    }
     if (s.planeProgress >= 0.2) { s.dotsProgress += 0.00035*dt; if (s.dotsProgress >= 1) s.dotsProgress = 1; }
     s.planeProgress += 0.00035*dt; if (s.planeProgress >= 1) s.planeProgress = 1;
     if (s.planeIsDrawn) {
